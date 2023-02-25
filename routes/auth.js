@@ -1,6 +1,7 @@
 const router = require("express").Router();
 const User = require("../models/User");
 const bcrypt = require("bcrypt");
+const { sign, verify } = require("jsonwebtoken");
 
 //REGISTER
 router.post("/register", async (req, res) => {
@@ -20,7 +21,7 @@ router.post("/register", async (req, res) => {
     const user = await newUser.save();
     res.status(200).json(user);
   } catch (err) {
-    res.status(500).json(err)
+    res.status(500).json(err);
   }
 });
 
@@ -29,13 +30,27 @@ router.post("/login", async (req, res) => {
   try {
     const user = await User.findOne({ email: req.body.email });
     !user && res.status(404).json("user not found");
-
-    const validPassword = await bcrypt.compare(req.body.password, user.password)
-    !validPassword && res.status(400).json("wrong password")
-
-    res.status(200).json(user)
+    const result = bcrypt.compareSync(req.body.password, user.password);
+    if (result) {
+      const accessToken = sign({ result: user }, process.env.JSON_KEY, {
+        expiresIn: "1h",
+      });
+      const refreshToken = sign(
+        { result: user },
+        process.env.JSON_REFRESH_KEY,
+        {
+          expiresIn: "7d",
+        }
+      );
+      return res.json({
+        success: 1,
+        message: "Logged in successfully",
+        accessToken,
+        refreshToken,
+      });
+    }
   } catch (err) {
-    res.status(500).json(err)
+    res.status(500).json(err);
   }
 });
 

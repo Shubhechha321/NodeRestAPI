@@ -43,6 +43,7 @@ router.delete("/:id", async (req, res) => {
 //get a user
 router.get("/:id", async (req, res) => {
   try {
+    console.log("user", req.params);
     const user = await User.findById(req.params.id);
     const { password, updatedAt, ...other } = user._doc; // not sending password and updatedAt
     res.status(200).json(other);
