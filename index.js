@@ -24,9 +24,7 @@ app.use(express.json());
 app.use(helmet());
 app.use(morgan("common"));
 
-app.use("/", (req, res) => {
-  res.json({ message: "Hello Vercel" });
-});
+
 app.use("/api/auth", authRoute);
 app.use("/api/users", checkToken, userRoute);
 app.use("/api/posts", postRoute);
